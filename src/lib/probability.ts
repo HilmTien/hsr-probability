@@ -1,15 +1,17 @@
-export default function createProbabilities(
-  flatProbability: number,
-  softPityStart: number,
-  probabilityIncrease: number,
-  hardPity: number
-) {
-  const perRoll = createPerRoll(
+import { ProbabilityValues } from "@/lib/probabilityStore";
+
+export default function createProbabilities({
+  flatProbability,
+  softPityStart,
+  probabilityIncrease,
+  hardPity,
+}: Omit<ProbabilityValues, "promotionalRate">) {
+  const perRoll = createPerRoll({
     flatProbability,
     softPityStart,
     probabilityIncrease,
-    hardPity
-  );
+    hardPity,
+  });
   const probabilityMassFunction = createPMF(perRoll);
 
   return {
@@ -19,12 +21,12 @@ export default function createProbabilities(
   };
 }
 
-function createPerRoll(
-  flatProbability: number,
-  softPityStart: number,
-  probabilityIncrease: number,
-  hardPity: number
-) {
+function createPerRoll({
+  flatProbability,
+  softPityStart,
+  probabilityIncrease,
+  hardPity,
+}: Omit<ProbabilityValues, "promotionalRate">) {
   function perRoll(pity: number): number {
     if (pity < 0 || pity > hardPity) {
       return 0;

@@ -1,62 +1,12 @@
+"use client";
+
 import createProbabilities from "@/lib/probability";
 import Table from "@/components/ui/table";
-import { accumulate, convolute, toPercent } from "@/lib/utils";
-
-const charValues = {
-  p: 0.006,
-  softPity: 74,
-  d: 0.06,
-  hardPity: 90,
-  promotionalRate: 0.5,
-};
-
-const character = createProbabilities(
-  charValues.p,
-  charValues.softPity,
-  charValues.d,
-  charValues.hardPity
-);
-
-const lcValues = {
-  p: 0.008,
-  softPity: 66,
-  d: 0.08,
-  hardPity: 80,
-  promotionalRate: 0.75,
-};
-
-const lightCone = createProbabilities(
-  lcValues.p,
-  lcValues.softPity,
-  lcValues.d,
-  lcValues.hardPity
-);
-
-function promotedCharacter() {
-  const promoted = Array.from(
-    { length: charValues.hardPity + 1 },
-    (_, index) => character.pmf(index) * (1 - charValues.promotionalRate)
-  );
-  promoted[0] = 1 - charValues.promotionalRate;
-  const ordinary = Array.from({ length: charValues.hardPity + 1 }, (_, index) =>
-    character.pmf(index)
-  );
-
-  return convolute(promoted, ordinary);
-}
-
-function promotedLightCone() {
-  const promoted = Array.from(
-    { length: lcValues.hardPity + 1 },
-    (_, index) => lightCone.pmf(index) * (1 - lcValues.promotionalRate)
-  );
-  promoted[0] = lcValues.promotionalRate;
-  const ordinary = Array.from({ length: lcValues.hardPity + 1 }, (_, index) =>
-    lightCone.pmf(index)
-  );
-
-  return convolute(promoted, ordinary);
-}
+import { accumulate, convolute, toPercent } from "@/lib/utils2";
+import {
+  useCharProbabilityStore,
+  useLCProbabilityStore,
+} from "@/lib/probabilityStore";
 
 function collectData(
   f: number[],
@@ -89,6 +39,39 @@ function collectData(
 }
 
 export default function ProbabilityTable() {
+  const charValues = useCharProbabilityStore((state) => state.values);
+  const lcValues = useLCProbabilityStore((state) => state.values);
+
+  const character = createProbabilities(charValues);
+  const lightCone = createProbabilities(lcValues);
+
+  function promotedCharacter() {
+    const promoted = Array.from(
+      { length: charValues.hardPity + 1 },
+      (_, index) => character.pmf(index) * (1 - charValues.promotionalRate)
+    );
+    promoted[0] = charValues.promotionalRate;
+    const ordinary = Array.from(
+      { length: charValues.hardPity + 1 },
+      (_, index) => character.pmf(index)
+    );
+
+    return convolute(promoted, ordinary);
+  }
+
+  function promotedLightCone() {
+    const promoted = Array.from(
+      { length: lcValues.hardPity + 1 },
+      (_, index) => lightCone.pmf(index) * (1 - lcValues.promotionalRate)
+    );
+    promoted[0] = lcValues.promotionalRate;
+    const ordinary = Array.from({ length: lcValues.hardPity + 1 }, (_, index) =>
+      lightCone.pmf(index)
+    );
+
+    return convolute(promoted, ordinary);
+  }
+
   const data: { name: string; data: string[] }[] = [];
 
   const f_char = Array.from({ length: charValues.hardPity + 1 }, (_, index) =>

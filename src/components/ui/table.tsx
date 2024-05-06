@@ -12,17 +12,19 @@ export default function Table({ headerContent, tableData }: TableProps) {
         <tr>
           <th></th>
           {headerContent.map((header) => (
-            <th className="p-2">{header}</th>
+            <th className="p-2" key={header}>
+              {header}
+            </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {tableData.map((row) => {
+        {tableData.map((row, i) => {
           return (
-            <tr>
+            <tr key={`row-${i}`}>
               <td className="font-bold">{row.name}</td>
-              {row.data.map((cell) => (
-                <td>{cell}</td>
+              {row.data.map((cell, j) => (
+                <td key={`cell-${i}-${j}`}>{cell}</td>
               ))}
             </tr>
           );
